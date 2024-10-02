@@ -1,3 +1,5 @@
+import os
+
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -12,6 +14,15 @@ here = Path(__file__).parent
 DEMOAPP_PATH = here / "demoapp"
 sys.path.insert(0, str(here / "../src"))
 sys.path.insert(0, str(DEMOAPP_PATH))
+
+
+def pytest_configure(config):
+    os.environ.update(DJANGO_SETTINGS_MODULE="demo.settings")
+
+
+    import django
+
+    django.setup()
 
 
 @pytest.fixture()
