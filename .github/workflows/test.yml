@@ -42,19 +42,19 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     name: Test py${{ matrix.python-version }}/dj${{matrix.django-version}}
-    services:
-      redis:
-        image: redis
-        ports:
-          - 16379:6379
-      postgres:
-        image: postgres
-        ports:
-          - 15432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: django_celery_boost
+#    services:
+#      redis:
+#        image: redis
+#        ports:
+#          - 16379:6379
+#      postgres:
+#        image: postgres
+#        ports:
+#          - 15432:5432
+#        env:
+#          POSTGRES_USER: postgres
+#          POSTGRES_PASSWORD: postgres
+#          POSTGRES_DB: django_celery_boost
     defaults:
       run:
         shell: bash
