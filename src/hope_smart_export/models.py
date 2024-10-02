@@ -1,31 +1,30 @@
 import io
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import connections, models
 from django.db.models import Model, QuerySet
-from django.template import Template, TemplateSyntaxError
+from django.template import Context, Template, TemplateSyntaxError
+from django.test.utils import CaptureQueriesContext
+from strategy_field.fields import StrategyField
 
-from hope_smart_export.exporters import registry
+from hope_smart_export.exporters.registry import registry
 from hope_smart_export.utils import chunked_iterator
 
 if TYPE_CHECKING:
-    from hope_smart_export.exporters import Exporter, Formats
+    from hope_smart_export.exporters import Exporter
 
 
-class ExportConfig(models.Model):
-    class Option(models.TextChoices):
-        MEMORY = "M", "Memory Safe"
-        TIME = "T", "Fastest"
+class Processor:
+    def __init__(self, cfg: 'Configuration'):
+        self.cfg = cfg
+        self._columns: Optional[list[Template]] = None
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    config = models.TextField(default="", blank=False)
-    option = models.CharField(max_length=1, choices=Option.choices, default=Option.TIME)
-
-    def parse_simple_config(self) -> list[Template]:
-        columns = []
-        for config_line in self.config.split("\n"):
+    @property
+    def columns(self) -> list[Template]:
+        self._columns = []
+        for config_line in self.cfg.columns.split("\n"):
             raw_line = config_line.strip()
             if raw_line.startswith("#"):
                 continue
@@ -41,18 +40,58 @@ class ExportConfig(models.Model):
             else:
                 raise ValidationError(f"Unexpected format: {raw_line}")
             try:
-                columns.append(Template(line))
+                self._columns.append(Template(line))
             except TemplateSyntaxError:
                 raise ValidationError(f"Invalid synthax: {line}")
-        return columns
+        return self._columns
 
-    def clean(self):
-        self.parse_simple_config()
+    def get_row_values(self, record: 'Any'):
+        return [column.render(Context({"record": record})) for column in self.columns]
 
-    def export(self, fmt: "Formats", queryset: QuerySet[Model]) -> io.BytesIO | io.StringIO:
-        exporter: type[Exporter] = registry[fmt]
-        if self.option == ExportConfig.Option.MEMORY:
-            data = exporter(self).export(chunked_iterator(queryset))
+
+class Configuration(models.Model):
+    class Option(models.TextChoices):
+        MEMORY = "M", "Memory Safe"
+        TIME = "T", "Fastest"
+
+    name = models.CharField(max_length=255, unique=True)
+    code = models.SlugField(max_length=255, unique=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    columns = models.TextField(default="", blank=False)
+    data = models.JSONField(default={}, blank=True)
+    exporter: "Exporter" = StrategyField(registry=registry)
+
+    option = models.CharField(max_length=1, choices=Option.choices, default=Option.TIME)
+    max_queries = models.IntegerField(
+        default=0, blank=True, null=True, help_text="Max queries expected for this template. Log warning otherwise."
+    )
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+    def get_config(self) -> dict[str, Any]:
+        return {**self.exporter.config_class.defaults, **self.data}
+
+    def clean(self) -> None:
+        self.get_processor().columns  # noqa
+
+    def export(self, queryset: QuerySet[Model]) -> io.BytesIO | io.StringIO:
+        # exporter: type[Exporter] = registry[fmt]
+        if self.option == Configuration.Option.MEMORY:
+            data = self.exporter.export(chunked_iterator(queryset))
         else:
-            data = exporter(self).export(queryset.iterator())
+            data = self.exporter.export(queryset.iterator())
         return data
+
+    def inspect(self, queryset: QuerySet[Model], max_lines=10) -> CaptureQueriesContext:
+        columns = self.get_processor().columns
+        with CaptureQueriesContext(connections[queryset.db]) as ctx:
+            for i, record in enumerate(queryset):
+                for column in columns:
+                    column.render(Context({"record": record}))
+                if i >= max_lines:
+                    break
+        return ctx
+
+    def get_processor(self) -> Processor:
+        return Processor(self)

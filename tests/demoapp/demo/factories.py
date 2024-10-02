@@ -2,17 +2,23 @@ from typing import Any, Optional
 
 import factory
 from django.contrib.auth.models import Group, Permission, User
+from django.contrib.contenttypes.models import ContentType
 from factory.django import DjangoModelFactory
 from factory.faker import Faker
+from strategy_field.utils import fqn
 
-from hope_smart_export.models import ExportConfig
+from hope_smart_export.exporters import ExportAsText
+from hope_smart_export.models import Configuration
 
 
-class ExportConfigFactory(DjangoModelFactory):
-    name = Faker("name")
+class ConfigurationFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"Config {n}")
+    code = factory.Sequence(lambda n: f"code-{n}")
+    content_type = factory.Iterator(ContentType.objects.all())
+    exporter = fqn(ExportAsText)
 
     class Meta:
-        model = ExportConfig
+        model = Configuration
 
 
 class UserFactory(DjangoModelFactory):

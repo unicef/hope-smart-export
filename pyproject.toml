@@ -6,7 +6,8 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "django-admin-extra-buttons>=1.5.8",
-    "django==4.2.*",
+    "django-adminactions>=2.3.0",
+    "django-strategy-field>=3.1.0",
 ]
 
 [project.optional-dependencies]
