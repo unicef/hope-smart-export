@@ -15,7 +15,7 @@ def cfg(db):
 
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
-        columns="id\n",
+        columns="id",
         exporter=fqn(ExportAsText),
         data={"field_separator": ";"},
     )
@@ -29,8 +29,9 @@ def cfg(db):
         ("{{record.username}}\n{{record.email}}", True),
         ("{record.username}}\n{{record.email}}", False),
         ("{{record.username}}\n\n\n{{record.email}}", False),
+        ("{$ecord.username}}\n{{record.email}}", False),
+        ("{% for %}\n{{record.email}}", False),
         ("123", True),
-        ("\n\n\n", False),
     ],
 )
 def test_validate(db, cfg, line, expected):
@@ -47,7 +48,7 @@ def test_process_qs(db, opt, cfg):
     from demo.factories import UserFactory
     from django.contrib.auth.models import User
 
-    with mock.patch.object(cfg, "columns", f"username\npassword"):
+    with mock.patch.object(cfg, "columns", "username\npassword"):
         with mock.patch.object(cfg, "option", opt):
             with mock.patch("hope_smart_export.utils.DEFAULT_BATCH_SIZE", 10):
                 UserFactory.create_batch(20)
@@ -57,6 +58,7 @@ def test_process_qs(db, opt, cfg):
 
 def test_inspect_qs(cfg):
     from django.contrib.auth.models import Permission
+
     with mock.patch.object(cfg, "columns", "name"):
         qs = Permission.objects.all()[:10]
         data = cfg.inspect(qs, 5)

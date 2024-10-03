@@ -7,6 +7,7 @@ from django.db import connections, models
 from django.db.models import Model, QuerySet
 from django.template import Context, Template, TemplateSyntaxError
 from django.test.utils import CaptureQueriesContext
+from django.utils.functional import cached_property
 from strategy_field.fields import StrategyField
 
 from hope_smart_export.exporters.registry import registry
@@ -17,11 +18,22 @@ if TYPE_CHECKING:
 
 
 class Processor:
-    def __init__(self, cfg: 'Configuration'):
+    def __init__(self, cfg: "Configuration"):
         self.cfg = cfg
         self._columns: Optional[list[Template]] = None
 
-    @property
+    @cached_property
+    def headers(self) -> list[str]:
+        if self.cfg.headers:
+            defined_headers = str(self.cfg.headers).split("\n")
+            headers_len = len(defined_headers)
+            columns_len = len(self.columns)
+            for i in range(headers_len, columns_len):
+                defined_headers.append("-")
+            return defined_headers[:columns_len]
+        return []
+
+    @cached_property
     def columns(self) -> list[Template]:
         self._columns = []
         for config_line in self.cfg.columns.split("\n"):
@@ -38,14 +50,16 @@ class Processor:
                 else:
                     line = "{{%s}}}" % raw_line
             else:
-                raise ValidationError(f"Unexpected format: {raw_line}")
+                raise ValidationError(f"Unexpected format: '{raw_line}'")
             try:
-                self._columns.append(Template(line))
+                tpl = Template(line)
+                tpl.render(Context({}))
+                self._columns.append(tpl)
             except TemplateSyntaxError:
                 raise ValidationError(f"Invalid synthax: {line}")
         return self._columns
 
-    def get_row_values(self, record: 'Any'):
+    def get_row_values(self, record: "Any"):
         return [column.render(Context({"record": record})) for column in self.columns]
 
 
@@ -58,8 +72,9 @@ class Configuration(models.Model):
     code = models.SlugField(max_length=255, unique=True)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     columns = models.TextField(default="", blank=False)
-    data = models.JSONField(default={}, blank=True)
     exporter: "Exporter" = StrategyField(registry=registry)
+    headers = models.TextField(default="", blank=True, null=False)
+    data = models.JSONField(default={}, blank=True)
 
     option = models.CharField(max_length=1, choices=Option.choices, default=Option.TIME)
     max_queries = models.IntegerField(

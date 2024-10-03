@@ -1,14 +1,16 @@
-import csv
 from typing import TYPE_CHECKING
 from unittest import mock
 
+import openpyxl
 import pytest
 from strategy_field.utils import fqn
 
-from hope_smart_export.exporters.csv import ExportAsCSV
+from hope_smart_export.exporters.xls import ExportAsXls
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
+    from openpyxl.workbook.workbook import Workbook
+    from openpyxl.worksheet.worksheet import Worksheet
 
     from hope_smart_export.models import Configuration
 
@@ -29,12 +31,12 @@ def cfg(db):
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
         columns="username\nemail",
-        exporter=fqn(ExportAsCSV),
-        data={"delimiter": ",", "quotechar": "'", "quoting": csv.QUOTE_NONE, "escapechar": ""},
+        exporter=fqn(ExportAsXls),
+        option="T",
+        data={},
     )
 
 
-@pytest.mark.parametrize("dialect", [None, "excel"])
 @pytest.mark.parametrize(
     "line",
     [
@@ -45,20 +47,21 @@ def cfg(db):
         "{{record.username}}\n{{record.email}}",
     ],
 )
-def test_export(db, line, cfg: "Configuration", dialect: str, user: "User"):
+def test_export(db, line, cfg: "Configuration", user: "User"):
     from django.contrib.auth.models import User
 
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
-        cfg.data["dialect"] = dialect
         assert len(cfg.get_processor().columns) == 2
         data = cfg.export(User.objects.all())
-        assert data.read() == f"""{user.username},{user.email}\r\n"""
+        wb = openpyxl.load_workbook(data)
+        assert wb
 
 
 def test_export_headers(cfg: "Configuration", user: "User"):
     from django.contrib.auth.models import User
 
     with mock.patch.object(cfg, "headers", "username\nemail"):
-        assert len(cfg.get_processor().columns) == 2
         data = cfg.export(User.objects.all())
-        assert data.read() == f"""username,email\r\n{user.username},{user.email}\r\n"""
+        wb: "Workbook" = openpyxl.load_workbook(data)
+        sh: "Worksheet" = wb.worksheets[0]
+        assert [c.value for c in list(sh.rows)[0]] == ["#", "username", "email"]

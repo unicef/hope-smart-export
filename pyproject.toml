@@ -8,6 +8,7 @@ dependencies = [
     "django-admin-extra-buttons>=1.5.8",
     "django-adminactions>=2.3.0",
     "django-strategy-field>=3.1.0",
+    "xlsxwriter>=3.2.0",
 ]
 
 [project.optional-dependencies]
@@ -33,6 +34,8 @@ dev-dependencies = [
     "isort>=5.13.2",
     "flake8>=7.1.1",
     "black>=24.8.0",
+    "openpyxl>=3.1.5",
+    "django>=4",
 ]
 
 

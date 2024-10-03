@@ -3,16 +3,17 @@ from admin_extra_buttons.mixins import ExtraButtonsMixin
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.helpers import AdminForm
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
 from .models import Configuration
 
 
 class ExportTestForm(forms.Form):
-    max_records = forms.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
-    content_type = forms.CharField(widget=forms.Textarea)
+    max_records = forms.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)], initial=10)
+    content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())
 
 
 @admin.register(Configuration)
@@ -20,7 +21,7 @@ class ExportConfigModelAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     list_display = ("name", "code", "content_type")
     list_filter = ("content_type",)
     search_fields = ("name", "code")
-    exclude = ("configuration",)
+    exclude = ("data",)
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("content_type")
@@ -51,13 +52,18 @@ class ExportConfigModelAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         return TemplateResponse(request, "admin/hope_smart_export/configure.html", ctx, status=status_code)
 
     @button()
-    def test(self, request, pk: str) -> TemplateResponse | HttpResponseRedirect:
+    def test(self, request, pk: str) -> TemplateResponse | HttpResponse:
         ctx = self.get_common_context(request, pk)
+        configuration: Configuration = ctx["original"]
+        status_code = 200
         if request.method == "POST":
             form = ExportTestForm(request.POST, request.FILES)
             if form.is_valid():
-                pass
+                qs = form.cleaned_data["content_type"].model_class().objects.all()[: form.cleaned_data["max_records"]]
+                output = configuration.export(qs)
+                return HttpResponse(output, content_type="text/plain")
+            status_code = 400
         else:
-            form = ExportTestForm()
+            form = ExportTestForm(initial={"content_type": configuration.content_type})
         ctx["form"] = form
-        return TemplateResponse(request, "admin/hope_smart_export/test.html", ctx)
+        return TemplateResponse(request, "admin/hope_smart_export/test.html", ctx, status=status_code)

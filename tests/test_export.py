@@ -21,7 +21,7 @@ def cfg():
 
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
-        columns="id\n",
+        columns="username\nemail",
         exporter=fqn(ExportAsText),
         data={"field_separator": ";"},
     )
@@ -99,3 +99,16 @@ def test_export_iter(db, line, cfg):
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
         data = cfg.export(Group.objects.all())
     assert data.readline() == "Group #1;add_logentry;\n"
+
+
+@pytest.mark.parametrize(
+    "headers",
+    [
+        "1",
+        "1\n2",
+        "1\n2\n3",
+    ],
+)
+def test_export_balance_headers(db, headers, cfg):
+    with mock.patch.object(cfg, "headers", headers):
+        assert len(cfg.get_processor().headers) == 2

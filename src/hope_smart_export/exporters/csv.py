@@ -1,15 +1,15 @@
 import csv
 import io
+from typing import TYPE_CHECKING
 
-from adminactions.forms import CSVOptions, CSVConfigForm
+from adminactions.api import export_as_csv
+from adminactions.forms import CSVConfigForm, CSVOptions
 from django import forms
 from django.db.models import Model, QuerySet
 from django.template import Context
 from django.utils.translation import gettext as _
-from .base import Exporter, ExporterConfig
-from adminactions.api import export_as_csv
 
-from typing import TYPE_CHECKING
+from .base import Exporter, ExporterConfig
 
 if TYPE_CHECKING:
     from ..models import Processor
@@ -57,6 +57,9 @@ class ExportAsCSV(Exporter):
                 quoting=int(config["quoting"]),
             )
         processor: "Processor" = self.config.get_processor()
+        headers = processor.headers
+        if headers:
+            writer.writerow(headers)
         for record in queryset:
             values = processor.get_row_values(record)
             writer.writerow(values)
