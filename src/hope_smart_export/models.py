@@ -63,6 +63,25 @@ class Processor:
         return [column.render(Context({"record": record})) for column in self.columns]
 
 
+class ConfigurationQuerySet(models.QuerySet["AnyModel"]):
+    pass
+
+
+class ConfigurationManager(models.Manager["AnyModel"]):
+    _queryset_class = ConfigurationQuerySet
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    code = models.SlugField(max_length=255, unique=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return self.name
+
+
 class Configuration(models.Model):
     class Option(models.TextChoices):
         MEMORY = "M", "Memory Safe"
@@ -75,11 +94,15 @@ class Configuration(models.Model):
     exporter: "Exporter" = StrategyField(registry=registry)
     headers = models.TextField(default="", blank=True, null=False)
     data = models.JSONField(default={}, blank=True)
+    enabled = models.BooleanField(default=False, blank=True)
+    categories = models.ManyToManyField(Category, blank=True)
 
     option = models.CharField(max_length=1, choices=Option.choices, default=Option.TIME)
     max_queries = models.IntegerField(
         default=0, blank=True, null=True, help_text="Max queries expected for this template. Log warning otherwise."
     )
+
+    objects = ConfigurationManager
 
     def __str__(self) -> str:
         return str(self.name)

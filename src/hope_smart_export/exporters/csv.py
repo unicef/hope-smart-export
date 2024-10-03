@@ -2,11 +2,8 @@ import csv
 import io
 from typing import TYPE_CHECKING
 
-from adminactions.api import export_as_csv
-from adminactions.forms import CSVConfigForm, CSVOptions
 from django import forms
 from django.db.models import Model, QuerySet
-from django.template import Context
 from django.utils.translation import gettext as _
 
 from .base import Exporter, ExporterConfig

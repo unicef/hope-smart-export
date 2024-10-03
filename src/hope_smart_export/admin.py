@@ -8,7 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 
-from .models import Configuration
+from .models import Category, Configuration
 
 
 class ExportTestForm(forms.Form):
@@ -16,12 +16,19 @@ class ExportTestForm(forms.Form):
     content_type = forms.ModelChoiceField(queryset=ContentType.objects.all())
 
 
+@admin.register(Category)
+class CategoryModelAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    list_display = ("name", "code")
+    search_fields = ("name", "code")
+
+
 @admin.register(Configuration)
 class ExportConfigModelAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     list_display = ("name", "code", "content_type")
-    list_filter = ("content_type",)
+    list_filter = ("content_type", "categories")
     search_fields = ("name", "code")
     exclude = ("data",)
+    filter_horizontal = ("categories",)
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("content_type")

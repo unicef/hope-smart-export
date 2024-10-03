@@ -33,7 +33,7 @@ def cfg(db):
         columns="username\nemail",
         exporter=fqn(ExportAsXls),
         option="T",
-        data={},
+        data={"sheet_name": "TestSheet #1"},
     )
 
 
@@ -64,4 +64,5 @@ def test_export_headers(cfg: "Configuration", user: "User"):
         data = cfg.export(User.objects.all())
         wb: "Workbook" = openpyxl.load_workbook(data)
         sh: "Worksheet" = wb.worksheets[0]
+        assert sh.title == "TestSheet #1"
         assert [c.value for c in list(sh.rows)[0]] == ["#", "username", "email"]

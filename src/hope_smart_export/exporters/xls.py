@@ -1,41 +1,15 @@
 import io
-from typing import TYPE_CHECKING
 
 from django import forms
 from django.db.models import Model, QuerySet
-from django.template import Context
 from django.utils.encoding import force_str
-from django.utils.timezone import get_default_timezone
 
 from .base import Exporter, ExporterConfig
 
-if TYPE_CHECKING:
-    from ..models import Processor
-
 
 class XlsExporterConfig(ExporterConfig):
-    defaults = {
-        "date_format": "d/m/Y",
-        "datetime_format": "N j, Y, P",
-        "time_format": "P",
-        "sheet_name": "Sheet1",
-        "DateField": "DD MMM-YY",
-        "DateTimeField": "DD MMD YY hh:mm",
-        "TimeField": "hh:mm",
-        "IntegerField": "#,##",
-        "PositiveIntegerField": "#,##",
-        "PositiveSmallIntegerField": "#,##",
-        "BigIntegerField": "#,##",
-        "DecimalField": "#,##0.00",
-        "BooleanField": "boolean",
-        "NullBooleanField": "boolean",
-        # 'EmailField': lambda value: 'HYPERLINK("mailto:%s","%s")' % (value, value),
-        # 'URLField': lambda value: 'HYPERLINK("%s","%s")' % (value, value),
-        "CurrencyColumn": '"$"#,##0.00);[Red]("$"#,##0.00)',
-    }
-
-
-#
+    defaults = {"sheet_name": "Sheet #1"}
+    sheet_name = forms.CharField(max_length=100, required=False)
 
 
 class ExportAsXls(Exporter):

@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from django import forms
 from django.db.models import Model, QuerySet
-from django.template import Context
 
 from .base import Exporter, ExporterConfig
 

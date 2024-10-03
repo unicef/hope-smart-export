@@ -8,7 +8,15 @@ from factory.faker import Faker
 from strategy_field.utils import fqn
 
 from hope_smart_export.exporters import ExportAsText
-from hope_smart_export.models import Configuration
+from hope_smart_export.models import Configuration, Category
+
+
+class CategoryFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"Category {n}")
+
+    class Meta:
+        model = Category
+        django_get_or_create = ["name"]
 
 
 class ConfigurationFactory(DjangoModelFactory):
@@ -19,6 +27,16 @@ class ConfigurationFactory(DjangoModelFactory):
 
     class Meta:
         model = Configuration
+
+    @factory.post_generation  # type: ignore[misc]
+    def categories(self, create: bool, extracted: list[str], **kwargs: Any) -> None:
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            for name in extracted:
+                self.categories.add(CategoryFactory(name=name))
 
 
 class UserFactory(DjangoModelFactory):
