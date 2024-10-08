@@ -8,6 +8,7 @@ build/
 *.egg-info
 *.sqlite*
 uv.lock
+Makefile
 !.git
 !tests/.coveragerc
 !.github

@@ -93,7 +93,7 @@ class Configuration(models.Model):
     columns = models.TextField(default="", blank=False)
     exporter: "Exporter" = StrategyField(registry=registry)
     headers = models.TextField(default="", blank=True, null=False)
-    data = models.JSONField(default={}, blank=True)
+    data = models.JSONField(default=dict, blank=True)
     enabled = models.BooleanField(default=False, blank=True)
     categories = models.ManyToManyField(Category, blank=True)
 
