@@ -66,12 +66,6 @@ jobs:
       fail-fast: true
     needs: [ changes ]
     if: needs.changes.outputs.run_tests || needs.changes.outputs.lint
-#    env:
-#      CELERY_BROKER_URL: redis://localhost:16379/0
-#      DB_HOST: "localhost"
-#      DB_PORT: 15432
-#      DB_USER: "postgres"
-#      DB_PASSWORD: "postgres"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.7
