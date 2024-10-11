@@ -4,5 +4,5 @@ include LICENSE
 include MANIFEST.in
 
 recursive-include docs *
-recursive-include src/admin_extra_buttons *
+recursive-include src/hope_smart_export *
 recursive-include tests *
