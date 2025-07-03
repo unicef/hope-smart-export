@@ -6,14 +6,14 @@ from strategy_field.utils import fqn
 from hope_smart_export.exporters import ExportAsText
 
 
-@pytest.fixture()
+@pytest.fixture
 def user():
     from demo.factories import UserFactory
 
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def cfg():
     from demo.factories import ConfigurationFactory
     from django.contrib.auth.models import User
@@ -34,7 +34,6 @@ def cfg():
         "{{record.username}}\nemail",
         "{{record.username}}\n{{record.email}}",
         "{{record.username}}  \n   {{record.email}}   ",
-        "{{record.username}}\n{{record.email}}",
     ],
 )
 def test_export(db, line, cfg, user):

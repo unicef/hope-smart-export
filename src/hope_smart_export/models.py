@@ -1,5 +1,5 @@
 import io
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class Processor:
     def __init__(self, cfg: "Configuration"):
         self.cfg = cfg
-        self._columns: Optional[list[Template]] = None
+        self._columns: list[Template] | None = None
 
     @cached_property
     def headers(self) -> list[str]:
@@ -28,7 +28,7 @@ class Processor:
             defined_headers = str(self.cfg.headers).split("\n")
             headers_len = len(defined_headers)
             columns_len = len(self.columns)
-            for i in range(headers_len, columns_len):
+            for _ in range(headers_len, columns_len):
                 defined_headers.append("-")
             return defined_headers[:columns_len]
         return []
@@ -40,9 +40,7 @@ class Processor:
             raw_line = config_line.strip()
             if raw_line.startswith("#"):
                 continue
-            elif raw_line.startswith("{{"):
-                line = raw_line
-            elif raw_line.startswith("{%"):
+            if raw_line.startswith(("{{", "{%")):
                 line = raw_line
             elif raw_line:
                 if "record." not in raw_line:
@@ -114,7 +112,6 @@ class Configuration(models.Model):
         self.get_processor().columns  # noqa
 
     def export(self, queryset: QuerySet[Model]) -> io.BytesIO | io.StringIO:
-        # exporter: type[Exporter] = registry[fmt]
         if self.option == Configuration.Option.MEMORY:
             data = self.exporter.export(chunked_iterator(queryset))
         else:

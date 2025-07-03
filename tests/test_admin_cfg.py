@@ -5,7 +5,7 @@ from django.urls import reverse
 pytestmark = [pytest.mark.admin]
 
 
-@pytest.fixture()
+@pytest.fixture
 def cfg():
     from demo.factories import ConfigurationFactory
 

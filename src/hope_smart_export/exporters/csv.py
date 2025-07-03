@@ -1,3 +1,4 @@
+# noqa: A005
 import csv
 import io
 from typing import TYPE_CHECKING
@@ -18,8 +19,10 @@ escapechars = " \\"
 
 class TxtExporterConfig(ExporterConfig):
     defaults = {"delimiter": ",", "quotechar": "'", "quoting": csv.QUOTE_ALL, "escapechar": ""}
-    delimiter = forms.ChoiceField(label=_("Delimiter"), choices=list(zip(delimiters, delimiters)), initial=",")
-    quotechar = forms.ChoiceField(label=_("Quotechar"), choices=list(zip(quotes, quotes)), initial="'")
+    delimiter = forms.ChoiceField(
+        label=_("Delimiter"), choices=list(zip(delimiters, delimiters, strict=True)), initial=","
+    )
+    quotechar = forms.ChoiceField(label=_("Quotechar"), choices=list(zip(quotes, quotes, strict=True)), initial="'")
     quoting = forms.TypedChoiceField(
         coerce=int,
         label=_("Quoting"),

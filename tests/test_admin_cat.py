@@ -5,7 +5,7 @@ from django.urls import reverse
 pytestmark = [pytest.mark.admin]
 
 
-@pytest.fixture()
+@pytest.fixture
 def category():
     from demo.factories import CategoryFactory
 

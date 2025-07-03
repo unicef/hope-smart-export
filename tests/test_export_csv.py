@@ -13,14 +13,14 @@ if TYPE_CHECKING:
     from hope_smart_export.models import Configuration
 
 
-@pytest.fixture()
+@pytest.fixture
 def user():
     from demo.factories import UserFactory
 
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def cfg(db):
     from demo.factories import ConfigurationFactory
     from django.contrib.auth.models import User
@@ -42,7 +42,6 @@ def cfg(db):
         "{{record.username}}\nemail",
         "{{record.username}}\n{{record.email}}",
         "{{record.username}}  \n   {{record.email}}   ",
-        "{{record.username}}\n{{record.email}}",
     ],
 )
 def test_export(db, line, cfg: "Configuration", dialect: str, user: "User"):

@@ -20,13 +20,9 @@ class ExportAsText(Exporter):
     def export(self, queryset: QuerySet[Model]) -> io.BytesIO | io.StringIO:
         output = io.StringIO()
         processor: "Processor" = self.config.get_processor()
-        # columns = self.config.parse_simple_config()
         for record in queryset:
             values = processor.get_row_values(record)
             output.write(self.config.data["field_separator"].join(values) + self.config.data["field_separator"])
-            # for column in columns:
-            #     col_value = column.render(Context({"record": record}))
-            # output.write(f"{col_value}{self.config.data['field_separator']}")
             output.write("\n")
         output.seek(0)
         return output

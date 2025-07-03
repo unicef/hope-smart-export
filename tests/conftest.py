@@ -23,7 +23,7 @@ def pytest_configure(config):
     django.setup()
 
 
-@pytest.fixture()
+@pytest.fixture
 def std_user(db) -> "User":
     from demo.factories import UserFactory
 
