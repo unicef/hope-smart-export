@@ -7,7 +7,7 @@ from strategy_field.utils import fqn
 from hope_smart_export.exporters.txt import ExportAsText
 
 
-@pytest.fixture()
+@pytest.fixture
 def cfg(db):
     from demo.factories import ConfigurationFactory
     from django.contrib.auth.models import User
@@ -22,7 +22,7 @@ def cfg(db):
 
 
 @pytest.mark.parametrize(
-    "line,expected",
+    ("line", "expected"),
     [
         ("username\nemail", True),
         ("{{record.username}}  \nemail ", True),

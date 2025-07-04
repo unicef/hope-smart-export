@@ -34,13 +34,12 @@ class ExportAsXls(Exporter):
             for col, fieldname in enumerate(headers, start=1):
                 sheet.write(row, col, force_str(fieldname), formats["_general_"])
 
-        # settingstime_zone = get_default_timezone()
         for rownum, row in enumerate(queryset):
             sheet.write(rownum + 1, 0, rownum + 1)
             values = processor.get_row_values(row)
             for idx, value in enumerate(values):
                 fmt = formats.get(idx, formats["_general_"])
-                sheet.write(rownum + 1, idx + 1, values[idx], fmt)
+                sheet.write(rownum + 1, idx + 1, value, fmt)
 
         book.close()
         out.seek(0)
