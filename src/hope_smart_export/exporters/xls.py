@@ -16,7 +16,7 @@ class ExportAsXls(Exporter):
     config_class = XlsExporterConfig
 
     def export(self, queryset: QuerySet[Model]) -> io.BytesIO | io.StringIO:
-        import xlsxwriter
+        import xlsxwriter  # noqa
 
         config = self.config.get_config()
         out = io.BytesIO()

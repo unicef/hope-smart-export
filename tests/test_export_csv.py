@@ -15,16 +15,16 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def user():
-    from demo.factories import UserFactory
+    from demo.factories import UserFactory  # noqa
 
     return UserFactory()
 
 
 @pytest.fixture
 def cfg(db):
-    from demo.factories import ConfigurationFactory
-    from django.contrib.auth.models import User
-    from django.contrib.contenttypes.models import ContentType
+    from demo.factories import ConfigurationFactory  # noqa
+    from django.contrib.auth.models import User  # noqa
+    from django.contrib.contenttypes.models import ContentType  # noqa
 
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
@@ -45,7 +45,7 @@ def cfg(db):
     ],
 )
 def test_export(db, line, cfg: "Configuration", dialect: str, user: "User"):
-    from django.contrib.auth.models import User
+    from django.contrib.auth.models import User  # noqa
 
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
         cfg.data["dialect"] = dialect
@@ -55,7 +55,7 @@ def test_export(db, line, cfg: "Configuration", dialect: str, user: "User"):
 
 
 def test_export_headers(cfg: "Configuration", user: "User"):
-    from django.contrib.auth.models import User
+    from django.contrib.auth.models import User  # noqa
 
     with mock.patch.object(cfg, "headers", "username\nemail"):
         assert len(cfg.get_processor().columns) == 2

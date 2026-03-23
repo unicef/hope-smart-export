@@ -9,9 +9,9 @@ from hope_smart_export.exporters.txt import ExportAsText
 
 @pytest.fixture
 def cfg(db):
-    from demo.factories import ConfigurationFactory
-    from django.contrib.auth.models import User
-    from django.contrib.contenttypes.models import ContentType
+    from demo.factories import ConfigurationFactory  # noqa
+    from django.contrib.auth.models import User  # noqa
+    from django.contrib.contenttypes.models import ContentType  # noqa
 
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
@@ -45,8 +45,8 @@ def test_validate(db, cfg, line, expected):
 
 @pytest.mark.parametrize("opt", ["T", "M"])
 def test_process_qs(db, opt, cfg):
-    from demo.factories import UserFactory
-    from django.contrib.auth.models import User
+    from demo.factories import UserFactory  # noqa
+    from django.contrib.auth.models import User  # noqa
 
     with mock.patch.object(cfg, "columns", "username\npassword"):
         with mock.patch.object(cfg, "option", opt):
@@ -57,7 +57,7 @@ def test_process_qs(db, opt, cfg):
 
 
 def test_inspect_qs(cfg):
-    from django.contrib.auth.models import Permission
+    from django.contrib.auth.models import Permission  # noqa
 
     with mock.patch.object(cfg, "columns", "name"):
         qs = Permission.objects.all()[:10]

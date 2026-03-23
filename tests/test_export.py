@@ -8,16 +8,16 @@ from hope_smart_export.exporters import ExportAsText
 
 @pytest.fixture
 def user():
-    from demo.factories import UserFactory
+    from demo.factories import UserFactory  # noqa
 
     return UserFactory()
 
 
 @pytest.fixture
 def cfg():
-    from demo.factories import ConfigurationFactory
-    from django.contrib.auth.models import User
-    from django.contrib.contenttypes.models import ContentType
+    from demo.factories import ConfigurationFactory  # noqa
+    from django.contrib.auth.models import User  # noqa
+    from django.contrib.contenttypes.models import ContentType  # noqa
 
     return ConfigurationFactory(
         content_type=ContentType.objects.get_for_model(User),
@@ -37,7 +37,7 @@ def cfg():
     ],
 )
 def test_export(db, line, cfg, user):
-    from django.contrib.auth.models import User
+    from django.contrib.auth.models import User  # noqa
 
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
         assert len(cfg.get_processor().columns) == 2
@@ -52,7 +52,7 @@ def test_export(db, line, cfg, user):
     ],
 )
 def test_export_fk(db, line, cfg):
-    from django.contrib.auth.models import Permission
+    from django.contrib.auth.models import Permission  # noqa
 
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
         data = cfg.export(
@@ -71,7 +71,7 @@ def test_export_fk(db, line, cfg):
     ],
 )
 def test_export_filter(db, line, cfg, user):
-    from django.contrib.auth.models import Permission
+    from django.contrib.auth.models import Permission  # noqa
 
     with mock.patch.object(cfg, "columns", f"#comment\n{line}"):
         data = cfg.export(
@@ -90,8 +90,8 @@ def test_export_filter(db, line, cfg, user):
     ],
 )
 def test_export_iter(db, line, cfg):
-    from demo.factories import GroupFactory
-    from django.contrib.auth.models import Group
+    from demo.factories import GroupFactory  # noqa
+    from django.contrib.auth.models import Group  # noqa
 
     GroupFactory(name="Group #1", permissions=["admin.add_logentry"])
 
