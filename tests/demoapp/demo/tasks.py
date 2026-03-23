@@ -6,7 +6,7 @@ from concurrency.exceptions import RecordModifiedError
 
 @shared_task(bind=True)
 def process_job(self, pk, version=None):
-    from .models import Job
+    from .models import Job  # noqa
 
     job = Job.objects.get(pk=pk)
 

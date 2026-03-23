@@ -7,7 +7,7 @@ pytestmark = [pytest.mark.admin]
 
 @pytest.fixture
 def cfg():
-    from demo.factories import ConfigurationFactory
+    from demo.factories import ConfigurationFactory  # noqa
 
     return ConfigurationFactory(columns="id", data={"field_separator": ","})
 

@@ -18,14 +18,14 @@ sys.path.insert(0, str(DEMOAPP_PATH))
 def pytest_configure(config):
     os.environ.update(DJANGO_SETTINGS_MODULE="demo.settings")
 
-    import django
+    import django  # noqa
 
     django.setup()
 
 
 @pytest.fixture
 def std_user(db) -> "User":
-    from demo.factories import UserFactory
+    from demo.factories import UserFactory  # noqa
 
     return UserFactory(
         username="admin@example.com",

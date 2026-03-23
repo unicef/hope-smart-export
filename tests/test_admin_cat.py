@@ -7,7 +7,7 @@ pytestmark = [pytest.mark.admin]
 
 @pytest.fixture
 def category():
-    from demo.factories import CategoryFactory
+    from demo.factories import CategoryFactory  # noqa
 
     return CategoryFactory()
 
